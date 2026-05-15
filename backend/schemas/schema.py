@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Any
 
 
 # ___________________________________________________________________
@@ -51,8 +51,25 @@ class ModelOutput(BaseModel):
 # Schema class related to fastapi (request and response)
 
 # TODO : Implement these class later
-class SuccessResponse(BaseModel):
-    pass
+class ApiResponse(BaseModel):
+    success:bool
+    message:str
+    data:Any
 
-class ErrorResponse(BaseModel):
-    pass
+
+# THis can be thrown anywhere in backend throughout the application . Global exception handler will handle
+class ApiException(Exception):
+    def __init__(
+        self,
+        message: str,
+        status_code: int = 400,
+        error: bool = True
+    ):
+        self.message = message
+        self.status_code = status_code
+        self.error = error
+
+# Request type for "/chat" route. It should be in this format
+class ChatRequest(BaseModel):
+    folder_link:str
+    user_query:str
