@@ -2,7 +2,7 @@
 
 
 from urllib.parse import urlparse
-from schemas.schema import ModelOutput
+from backend.schemas.schema import ModelOutput
 
 def get_folder_id(url):
     """
