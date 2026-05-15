@@ -1,13 +1,13 @@
 from langchain.agents import create_agent
 from langchain.agents.structured_output import ToolStrategy
-from agents.prompts import SYSTEM_PROMPT
-from schemas.schema import ModelOutput
+from backend.agents.prompts import SYSTEM_PROMPT
+from backend.schemas.schema import ModelOutput
 from functools import lru_cache
 import config
 
 
 @lru_cache(maxsize=1)
-def getAgent():
+def get_agent():
     return  create_agent(
             model=config.MODEL, # Choose google model
             # tools=[], # In our case no need of tool 
