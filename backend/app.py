@@ -53,7 +53,7 @@ def handle_agent_request(req:ChatRequest):
         ).execute()
 
         if not len(results["files"]):
-            raise ApiException("Unable to fetch file or folder has restricted access")
+            raise ApiException("File with the given folder and query was not found :(")
 
         return ApiResponse(success=True, message="Fetched successfully",data=results["files"])
 
