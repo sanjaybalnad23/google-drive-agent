@@ -1,18 +1,33 @@
-import streamlit as st
+import os
+
+import dotenv
 import requests
+import streamlit as st
 
-API_URL = "http://127.0.0.1:8000/agent"
+dotenv.load_dotenv()
+
+DEFAULT_API_URL = "http://127.0.0.1:8000/agent"
 
 
-def search_drive(folder_link: str, query: str):
+def get_api_url() -> str:
+    try:
+        return st.secrets["API_URL"]
+    except (KeyError, FileNotFoundError):
+        return os.environ.get("API_URL", DEFAULT_API_URL)
+
+
+def search_drive(folder_link: str, query: str) -> dict:
     payload = {
         "folder_link": folder_link,
-        "user_query": query
+        "user_query": query,
     }
 
-    response = requests.post(API_URL, json=payload)
-
-    return response.json()
+    try:
+        response = requests.post(get_api_url(), json=payload, timeout=120)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        return {"success": False, "message": f"Could not reach API: {e}"}
 
 
 def render_file(file: dict):
@@ -67,7 +82,7 @@ def main():
                 render_file(file)
 
         else:
-            st.error(data["message"])
+            st.error(data.get("message", "Something went wrong"))
 
 
 if __name__ == "__main__":
