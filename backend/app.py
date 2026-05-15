@@ -6,13 +6,16 @@ from backend.schemas.schema import ChatRequest, ApiException, ApiResponse
 from backend.google_drive.drive import get_drive_service
 from backend.helpers.helper import get_folder_id, get_query
 from googleapiclient.errors import HttpError
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI()
 
 
 @app.exception_handler(ApiException)
 async def exception_handler(req, exception:ApiException):
-    print(str(exception))
+    logging.error(str(exception))
     return JSONResponse(
         status_code=exception.status_code,
         content={
@@ -28,8 +31,8 @@ def handle_agent_request(req:ChatRequest):
         agent = get_agent()
         drive_service = get_drive_service()
 
-        folder_name = get_folder_id(req.folder_link)
-        if not folder_name:
+        folder_id = get_folder_id(req.folder_link)
+        if not folder_id:
             raise ApiException("Give proper folder link")
 
         if not req.user_query:
@@ -45,8 +48,8 @@ def handle_agent_request(req:ChatRequest):
         })
         
         structured_response = model_response["structured_response"]
-        query = get_query(structured_response, folder_name)
-
+        query = get_query(structured_response, folder_id)
+        logging.info("query generated from search:     "+query)
         results = drive_service.files().list(
             q=query,
             fields="files(id,name,mimeType,webViewLink)"

@@ -1,7 +1,5 @@
 # Helper functions used throughout backend application :)
 
-
-from urllib.parse import urlparse
 from backend.schemas.schema import ModelOutput
 
 def get_folder_id(url):
@@ -42,6 +40,15 @@ MIME_TYPE_MAP = {
     "ppt": "application/vnd.google-apps.presentation",
     "image": "image/"
 }
+
+
+def _escape_drive_q_value(value: str) -> str:
+    """Escape \\ and ' for Google Drive API q string literals."""
+    return value.replace("\\", "\\\\").replace("'", "\\'")
+
+
+def _quoted(value: str) -> str:
+    return f"'{_escape_drive_q_value(value)}'"
 
 
 def get_query(filters: ModelOutput, folder_id: str) -> str:
@@ -96,7 +103,7 @@ def get_query(filters: ModelOutput, folder_id: str) -> str:
     if not folder_id:
         raise ValueError("Provide folder id")
 
-    query_parts.append(f"'{folder_id}' in parents")
+    query_parts.append(f"{_quoted(folder_id)} in parents")
 
     # Ignore trashed files
     query_parts.append("trashed=false")
@@ -104,14 +111,14 @@ def get_query(filters: ModelOutput, folder_id: str) -> str:
     # Filename contains ANY
     if filters.filename_contains_any:
         any_conditions = [
-            f"name contains '{word}'" for word in filters.filename_contains_any
+            f"name contains {_quoted(word)}" for word in filters.filename_contains_any
         ]
         query_parts.append(f"({' or '.join(any_conditions)})")
 
     # Filename contains ALL
     if filters.filename_contains_all:
         all_conditions = [
-            f"name contains '{word}'"
+            f"name contains {_quoted(word)}"
             for word in filters.filename_contains_all
         ]
         query_parts.append(
@@ -121,7 +128,7 @@ def get_query(filters: ModelOutput, folder_id: str) -> str:
     # Content contains ANY
     if filters.contains_text_any:
         any_conditions = [
-            f"fullText contains '{word}'"
+            f"fullText contains {_quoted(word)}"
             for word in filters.contains_text_any
         ]
         query_parts.append(
@@ -131,7 +138,7 @@ def get_query(filters: ModelOutput, folder_id: str) -> str:
     # Content contains ALL
     if filters.contains_text_all:
         all_conditions = [
-            f"fullText contains '{word}'"
+            f"fullText contains {_quoted(word)}"
             for word in filters.contains_text_all
         ]
         query_parts.append(
@@ -146,24 +153,24 @@ def get_query(filters: ModelOutput, folder_id: str) -> str:
             # image/ is special because many image mime types exist
             if filters.file_type == "image":
                 query_parts.append(
-                    f"mimeType contains '{mime}'"
+                    f"mimeType contains {_quoted(mime)}"
                 )
             else:
                 query_parts.append(
-                    f"mimeType='{mime}'"
+                    f"mimeType={_quoted(mime)}"
                 )
 
 
     # Modified after
     if filters.modified_after:
         query_parts.append(
-            f"modifiedTime > '{filters.modified_after}T00:00:00'"
+            f"modifiedTime > {_quoted(f'{filters.modified_after}T00:00:00')}"
         )
 
     # Modified before
     if filters.modified_before:
         query_parts.append(
-            f"modifiedTime < '{filters.modified_before}T23:59:59'"
+            f"modifiedTime < {_quoted(f'{filters.modified_before}T23:59:59')}"
         )
 
     # print(query_parts) 
