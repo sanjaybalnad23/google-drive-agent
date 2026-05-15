@@ -10,3 +10,7 @@ wheels/
 .venv
 
 .env
+service-account.json
+
+# I used this for testing purpose
+test.py 
