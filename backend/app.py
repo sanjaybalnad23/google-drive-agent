@@ -4,7 +4,8 @@ import backend
 from backend.agents.agent import get_agent
 from backend.schemas.schema import ChatRequest, ApiException, ApiResponse
 from backend.google_drive.drive import get_drive_service
-from backend.helpers.helper import get_folder_id, get_query
+from backend.helpers.helper import get_folder_id
+from backend.google_drive.search import search_files_recursive
 from googleapiclient.errors import HttpError
 import logging
 
@@ -48,20 +49,18 @@ def handle_agent_request(req:ChatRequest):
         })
         
         structured_response = model_response["structured_response"]
-        query = get_query(structured_response, folder_id)
-        logging.info("query generated from search:     "+query)
-        results = drive_service.files().list(
-            q=query,
-            fields="files(id,name,mimeType,webViewLink)"
-        ).execute()
+        files = search_files_recursive(drive_service, structured_response, folder_id)
 
-        if not len(results["files"]):
+        if not files:
             raise ApiException("File with the given folder and query was not found :(")
 
-        return ApiResponse(success=True, message="Fetched successfully",data=results["files"])
+        return ApiResponse(success=True, message="Fetched successfully", data=files)
 
     except ApiException as e:
         raise e
+
+    except ValueError as e:
+        raise ApiException(str(e))
 
     except HttpError as e:
         raise ApiException(e.reason, e.status_code)
