@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from backend.agents.agent import get_agent
-from backend.schemas.schema import ChatRequest, ApiException, ApiResponse
-from backend.google_drive.drive import get_drive_service
-from backend.helpers.helper import get_folder_id, get_query
+from agents.agent import get_agent
+from schemas.schema import ChatRequest, ApiException, ApiResponse
+from google_drive.drive import get_drive_service
+from helpers.helper import get_folder_id, get_query
 from googleapiclient.errors import HttpError
 
 app = FastAPI()

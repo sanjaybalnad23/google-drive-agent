@@ -1,8 +1,8 @@
 from langchain.agents import create_agent
 from langchain.agents.structured_output import ToolStrategy
-from backend.agents.prompts import SYSTEM_PROMPT
-from backend.schemas.schema import ModelOutput
-from backend.agents.tools import get_current_timestamp
+from agents.prompts import SYSTEM_PROMPT
+from schemas.schema import ModelOutput
+from agents.tools import get_current_timestamp
 from functools import lru_cache
 import config
 
